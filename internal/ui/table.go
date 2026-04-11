@@ -41,14 +41,14 @@ func buildTable(
 	header := container.New(
 		newProportionalLayout(),
 		boldLabel("#"),
-		boldLabel("Data"),
-		boldLabel("Aeromobile / Motore"),
+		boldLabel("Date"),
+		boldLabel("Aircraft / Engine"),
 		boldLabel("Reg"),
 		boldLabel("Cat."),
 		boldLabel("ATA"),
 		boldLabel("WO N°"),
-		boldLabel("Dettaglio Lavoro"),
-		boldLabel("Verificato da"),
+		boldLabel("Task Detail"),
+		boldLabel("Verified by"),
 		boldLabel(""),
 	)
 	headerBg := container.NewPadded(header)
@@ -107,8 +107,8 @@ func buildTable(
 			delBtn.Importance = widget.DangerImportance
 			delBtn.OnTapped = func() {
 				dialog.ShowConfirm(
-					"Conferma eliminazione",
-					"Eliminare questa entry?\nL'operazione non è reversibile.",
+					"Confirm deletion",
+					"Are you sure you want to delete this entry?\nThis operation is irreversible.",
 					func(ok bool) {
 						if ok {
 							onDelete(e.ID)

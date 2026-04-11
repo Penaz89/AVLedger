@@ -21,9 +21,9 @@ var categories = []string{"A", "B1", "B2", "C"}
 func showEntryForm(parent fyne.Window, existing models.LogEntry, onSave func(models.LogEntry)) {
 	isNew := existing.ID == 0
 
-	title := "Nuovo Task"
+	title := "New Task"
 	if !isNew {
-		title = "Modifica Entry"
+		title = "Edit Entry"
 	}
 
 	// ---- Fields ----
@@ -32,15 +32,15 @@ func showEntryForm(parent fyne.Window, existing models.LogEntry, onSave func(mod
 	dateEntry.SetText(existing.Date)
 
 	aircraftEntry := widget.NewEntry()
-	aircraftEntry.SetPlaceHolder("es. B737 NG (CFM56)")
+	aircraftEntry.SetPlaceHolder("e.g. B737 NG (CFM56)")
 	aircraftEntry.SetText(existing.AircraftEngineType)
 
 	regEntry := widget.NewEntry()
-	regEntry.SetPlaceHolder("es. EI-DAZ")
+	regEntry.SetPlaceHolder("e.g. EI-DAZ")
 	regEntry.SetText(existing.RegMarks)
 
 	taskEntry := widget.NewMultiLineEntry()
-	taskEntry.SetPlaceHolder("Descrizione del lavoro eseguito…")
+	taskEntry.SetPlaceHolder("Description of work performed…")
 	taskEntry.SetText(existing.TaskDetail)
 	taskEntry.SetMinRowsVisible(3)
 
@@ -52,32 +52,32 @@ func showEntryForm(parent fyne.Window, existing models.LogEntry, onSave func(mod
 	}
 
 	ataEntry := widget.NewEntry()
-	ataEntry.SetPlaceHolder("es. 32")
+	ataEntry.SetPlaceHolder("e.g. 32")
 	ataEntry.SetText(existing.ATA)
 
 	woEntry := widget.NewEntry()
-	woEntry.SetPlaceHolder("Numero Work Order")
+	woEntry.SetPlaceHolder("Work Order Number")
 	woEntry.SetText(existing.WorkOrderNumber)
 
 	verifiedEntry := widget.NewMultiLineEntry()
-	verifiedEntry.SetPlaceHolder("Nome + n° autorizzazione / AML")
+	verifiedEntry.SetPlaceHolder("Name + authorisation n° / AML")
 	verifiedEntry.SetText(existing.VerifiedBy)
 	verifiedEntry.SetMinRowsVisible(2)
 
 	// ---- Layout ----
 	form := widget.NewForm(
-		widget.NewFormItem("Data *", dateEntry),
-		widget.NewFormItem("Aeromobile / Motore *", aircraftEntry),
-		widget.NewFormItem("Marche (Reg) *", regEntry),
-		widget.NewFormItem("Dettaglio Lavoro *", taskEntry),
-		widget.NewFormItem("Categoria", categorySelect),
+		widget.NewFormItem("Date *", dateEntry),
+		widget.NewFormItem("Aircraft / Engine *", aircraftEntry),
+		widget.NewFormItem("Registration *", regEntry),
+		widget.NewFormItem("Task Detail *", taskEntry),
+		widget.NewFormItem("Category", categorySelect),
 		widget.NewFormItem("ATA", ataEntry),
 		widget.NewFormItem("Work Order N°", woEntry),
-		widget.NewFormItem("Verificato da", verifiedEntry),
+		widget.NewFormItem("Verified by", verifiedEntry),
 	)
 
 	requiredLabel := widget.NewLabelWithStyle(
-		"* Campi obbligatori",
+		"* Required fields",
 		fyne.TextAlignLeading,
 		fyne.TextStyle{Italic: true},
 	)
@@ -89,25 +89,25 @@ func showEntryForm(parent fyne.Window, existing models.LogEntry, onSave func(mod
 	// ---- Dialog ----
 	var d dialog.Dialog
 
-	saveBtn := widget.NewButtonWithIcon("Salva", theme.DocumentSaveIcon(), func() {
+	saveBtn := widget.NewButtonWithIcon("Save", theme.DocumentSaveIcon(), func() {
 		// Validate required fields
 		var missing []string
 		if strings.TrimSpace(dateEntry.Text) == "" {
-			missing = append(missing, "Data")
+			missing = append(missing, "Date")
 		}
 		if strings.TrimSpace(aircraftEntry.Text) == "" {
-			missing = append(missing, "Aeromobile / Motore")
+			missing = append(missing, "Aircraft / Engine")
 		}
 		if strings.TrimSpace(regEntry.Text) == "" {
-			missing = append(missing, "Marche (Reg)")
+			missing = append(missing, "Registration")
 		}
 		if strings.TrimSpace(taskEntry.Text) == "" {
-			missing = append(missing, "Dettaglio Lavoro")
+			missing = append(missing, "Task Detail")
 		}
 		if len(missing) > 0 {
 			dialog.ShowInformation(
-				"Campi mancanti",
-				"Compila i seguenti campi obbligatori:\n• "+strings.Join(missing, "\n• "),
+				"Missing fields",
+				"Please fill in the following required fields:\n• "+strings.Join(missing, "\n• "),
 				parent,
 			)
 			return
@@ -129,7 +129,7 @@ func showEntryForm(parent fyne.Window, existing models.LogEntry, onSave func(mod
 	})
 	saveBtn.Importance = widget.HighImportance
 
-	cancelBtn := widget.NewButtonWithIcon("Annulla", theme.CancelIcon(), func() {
+	cancelBtn := widget.NewButtonWithIcon("Cancel", theme.CancelIcon(), func() {
 		d.Hide()
 	})
 

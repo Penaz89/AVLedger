@@ -18,20 +18,20 @@ func showSettingsDialog(parent fyne.Window, db *database.DB, onSave func(models.
 	licenceNumber, _ := db.GetSetting("licence_number")
 
 	nameEntry := widget.NewEntry()
-	nameEntry.SetPlaceHolder("Nome Cognome")
+	nameEntry.SetPlaceHolder("First and Last Name")
 	nameEntry.SetText(holderName)
 
 	licenceEntry := widget.NewEntry()
-	licenceEntry.SetPlaceHolder("es. IE.145.006 297")
+	licenceEntry.SetPlaceHolder("e.g. IE.145.006 297")
 	licenceEntry.SetText(licenceNumber)
 
 	form := widget.NewForm(
-		widget.NewFormItem("Nome titolare logbook", nameEntry),
-		widget.NewFormItem("N° Licenza / AML", licenceEntry),
+		widget.NewFormItem("Logbook holder name", nameEntry),
+		widget.NewFormItem("Licence N° / AML", licenceEntry),
 	)
 
 	note := widget.NewLabelWithStyle(
-		"Questi dati verranno stampati nel footer del PDF esportato.",
+		"This information will be printed in the footer of the exported PDF.",
 		fyne.TextAlignLeading,
 		fyne.TextStyle{Italic: true},
 	)
@@ -40,7 +40,7 @@ func showSettingsDialog(parent fyne.Window, db *database.DB, onSave func(models.
 
 	var d dialog.Dialog
 
-	saveBtn := widget.NewButtonWithIcon("Salva impostazioni", theme.DocumentSaveIcon(), func() {
+	saveBtn := widget.NewButtonWithIcon("Save settings", theme.DocumentSaveIcon(), func() {
 		_ = db.SetSetting("holder_name", nameEntry.Text)
 		_ = db.SetSetting("licence_number", licenceEntry.Text)
 		onSave(models.Settings{
@@ -48,18 +48,18 @@ func showSettingsDialog(parent fyne.Window, db *database.DB, onSave func(models.
 			LicenceNumber: licenceEntry.Text,
 		})
 		d.Hide()
-		dialog.ShowInformation("Salvato", "Impostazioni salvate correttamente.", parent)
+		dialog.ShowInformation("Saved", "Settings saved successfully.", parent)
 	})
 	saveBtn.Importance = widget.HighImportance
 
-	cancelBtn := widget.NewButtonWithIcon("Annulla", theme.CancelIcon(), func() {
+	cancelBtn := widget.NewButtonWithIcon("Cancel", theme.CancelIcon(), func() {
 		d.Hide()
 	})
 
 	buttons := container.NewHBox(cancelBtn, saveBtn)
 	fullContent := container.NewBorder(nil, buttons, nil, nil, content)
 
-	d = dialog.NewCustom("Impostazioni", "✕", fullContent, parent)
+	d = dialog.NewCustom("Settings", "✕", fullContent, parent)
 	d.Resize(fyne.NewSize(420, 220))
 	d.Show()
 }

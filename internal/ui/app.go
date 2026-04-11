@@ -82,7 +82,7 @@ func Run() {
 	countLabel := widget.NewLabel("")
 	updateCount := func() {
 		n := len(entryList)
-		countLabel.SetText(fmt.Sprintf("%d entr%s nel logbook", n, pluralIt(n)))
+		countLabel.SetText(fmt.Sprintf("%d entr%s in the logbook", n, pluralIt(n)))
 	}
 	updateCount()
 
@@ -104,11 +104,11 @@ func Run() {
 	})
 	newBtn.Importance = widget.HighImportance
 
-	exportBtn := widget.NewButtonWithIcon("  Esporta PDF", theme.DocumentPrintIcon(), func() {
+	exportBtn := widget.NewButtonWithIcon("  Export PDF", theme.DocumentPrintIcon(), func() {
 		exportToPDF(w, db, &entryList, settings)
 	})
 
-	settingsBtn := widget.NewButtonWithIcon("  Impostazioni", theme.SettingsIcon(), func() {
+	settingsBtn := widget.NewButtonWithIcon("  Settings", theme.SettingsIcon(), func() {
 		showSettingsDialog(w, db, func(s models.Settings) {
 			settings = s
 		})
@@ -120,7 +120,7 @@ func Run() {
 	dbPathLabel.TextStyle = fyne.TextStyle{Monospace: true}
 	dbPathLabel.Truncation = fyne.TextTruncateEllipsis
 
-	openFolderBtn := widget.NewButtonWithIcon("Apri cartella", theme.FolderOpenIcon(), func() {
+	openFolderBtn := widget.NewButtonWithIcon("Open folder", theme.FolderOpenIcon(), func() {
 		openFolder(filepath.Dir(db.Path))
 	})
 
@@ -192,8 +192,8 @@ func loadSettings(db *database.DB) models.Settings {
 
 func exportToPDF(w fyne.Window, db *database.DB, entries *[]models.LogEntry, s models.Settings) {
 	if len(*entries) == 0 {
-		dialog.ShowInformation("Nessun dato",
-			"Il logbook è vuoto. Aggiungi almeno una entry prima di esportare.", w)
+		dialog.ShowInformation("No data",
+			"The logbook is empty. Add at least one entry before exporting.", w)
 		return
 	}
 
@@ -208,8 +208,8 @@ func exportToPDF(w fyne.Window, db *database.DB, entries *[]models.LogEntry, s m
 			dialog.ShowError(err, w)
 			return
 		}
-		dialog.ShowInformation("Esportazione completata",
-			fmt.Sprintf("PDF salvato in:\n%s", path), w)
+		dialog.ShowInformation("Export complete",
+			fmt.Sprintf("PDF saved in:\n%s", path), w)
 		openFile(path)
 	}, w)
 
