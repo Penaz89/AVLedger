@@ -172,12 +172,11 @@ func drawPage(pdf *fpdf.Fpdf, entries []models.LogEntry, s models.Settings, page
 			if j == 3 || j == 8 {
 				align = "L"
 			}
+			style := ""
 			if hasData && (j == 3 || j == 8) {
-				pdf.SetFont("Helvetica", "I", 8)
-			} else {
-				pdf.SetFont("Helvetica", "", 8)
+				style = "I"
 			}
-			pdf.CellFormat(colWidths[j], rowH, cell, "", 0, align, false, 0, "")
+			fitCellText(pdf, colWidths[j], rowH, cell, style, align)
 			xCol += colWidths[j]
 		}
 	}
@@ -227,4 +226,23 @@ func chunkEntries(entries []models.LogEntry, size int) [][]models.LogEntry {
 		entries = entries[n:]
 	}
 	return chunks
+}
+
+// fitCellText renders text inside a cell, shrinking the font size as needed
+// (from 8pt down to 4pt) to ensure the text never overflows the cell width.
+func fitCellText(pdf *fpdf.Fpdf, w, h float64, txt, style, align string) {
+	const (
+		startSize = 8.0
+		minSize   = 4.0
+	)
+	// Leave a small horizontal padding so text doesn't touch the border.
+	const hPad = 1.0
+
+	size := startSize
+	pdf.SetFont("Helvetica", style, size)
+	for size > minSize && pdf.GetStringWidth(txt) > w-hPad {
+		size -= 0.5
+		pdf.SetFont("Helvetica", style, size)
+	}
+	pdf.CellFormat(w, h, txt, "", 0, align, false, 0, "")
 }
