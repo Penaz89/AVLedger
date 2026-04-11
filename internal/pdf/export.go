@@ -240,21 +240,144 @@ func chunkEntries(entries []models.LogEntry, size int) [][]models.LogEntry {
 	return chunks
 }
 
-// fitCellText renders text inside a cell, shrinking the font size as needed
-// (from 8pt down to 4pt) to ensure the text never overflows the cell width.
+// wrapText splits txt into lines that each fit within maxW mm at the current
+// font size. It respects word boundaries and hard-wraps individual words that
+// are wider than maxW.
+func wrapText(pdf *fpdf.Fpdf, txt string, maxW float64) []string {
+	words := splitWords(txt)
+	if len(words) == 0 {
+		return []string{""}
+	}
+
+	var lines []string
+	current := ""
+
+	for _, word := range words {
+		if word == "" {
+			continue
+		}
+		candidate := word
+		if current != "" {
+			candidate = current + " " + word
+		}
+
+		if pdf.GetStringWidth(candidate) <= maxW {
+			current = candidate
+		} else {
+			// Current word alone is wider than the cell — hard-break it.
+			if current == "" {
+				// Flush the oversized word as-is (font shrinking will handle it).
+				lines = append(lines, word)
+			} else {
+				lines = append(lines, current)
+				current = word
+			}
+		}
+	}
+	if current != "" {
+		lines = append(lines, current)
+	}
+	return lines
+}
+
+// splitWords splits a string by spaces, preserving non-empty tokens.
+func splitWords(s string) []string {
+	var words []string
+	start := -1
+	for i, ch := range s {
+		if ch == ' ' {
+			if start >= 0 {
+				words = append(words, s[start:i])
+				start = -1
+			}
+		} else {
+			if start < 0 {
+				start = i
+			}
+		}
+	}
+	if start >= 0 {
+		words = append(words, s[start:])
+	}
+	return words
+}
+
+// fitCellText renders text inside a cell.
+// Strategy:
+//  1. At the current font size (starting at 8pt), attempt to word-wrap the
+//     text into lines that fit within the cell width.
+//  2. If the wrapped lines fit within the cell height, render them and return.
+//  3. Otherwise reduce the font size by 0.5pt and try again, down to 4pt.
+//  4. At the minimum size render whatever fits.
 func fitCellText(pdf *fpdf.Fpdf, w, h float64, txt, style, align string) {
 	const (
 		startSize = 8.0
 		minSize   = 4.0
+		hPad      = 1.0 // horizontal padding so text doesn't touch borders
+		vPad      = 0.5 // vertical padding (top + bottom total)
 	)
-	// Leave a small horizontal padding so text doesn't touch the border.
-	const hPad = 1.0
+
+	if txt == "" {
+		pdf.SetFont("Helvetica", style, startSize)
+		pdf.CellFormat(w, h, "", "", 0, align, false, 0, "")
+		return
+	}
+
+	// Remember the starting X,Y so we can render at the correct position.
+	startX := pdf.GetX()
+	startY := pdf.GetY()
 
 	size := startSize
-	pdf.SetFont("Helvetica", style, size)
-	for size > minSize && pdf.GetStringWidth(txt) > w-hPad {
-		size -= 0.5
+	for {
 		pdf.SetFont("Helvetica", style, size)
+
+		// Line height: fpdf uses font size in points; 1pt ≈ 0.352778 mm.
+		lineH := size * 0.352778 * 1.2 // 1.2 leading factor
+
+		// How many wrapped lines fit vertically?
+		maxLines := int((h - vPad) / lineH)
+		if maxLines < 1 {
+			maxLines = 1
+		}
+
+		lines := wrapText(pdf, txt, w-hPad)
+
+		// Check both vertical fit (line count) AND horizontal fit (each line width).
+		// A single very-long word with no spaces produces 1 line that is still too wide.
+		allFitH := true
+		for _, line := range lines {
+			if pdf.GetStringWidth(line) > w-hPad {
+				allFitH = false
+				break
+			}
+		}
+
+		if (len(lines) <= maxLines && allFitH) || size <= minSize {
+			// It fits (or we've hit the minimum size) — render.
+			// Clip to maxLines so we never overflow.
+			if len(lines) > maxLines {
+				lines = lines[:maxLines]
+			}
+
+			// Total block height for vertical centering.
+			blockH := float64(len(lines)) * lineH
+			topY := startY + (h-blockH)/2.0
+			if topY < startY {
+				topY = startY
+			}
+
+			for li, line := range lines {
+				lineY := topY + float64(li)*lineH
+				pdf.SetXY(startX, lineY)
+				pdf.CellFormat(w, lineH, line, "", 0, align, false, 0, "")
+			}
+
+			// Restore X/Y to after the cell so the caller's layout isn't broken.
+			pdf.SetXY(startX+w, startY)
+			return
+		}
+
+		// Text doesn't fit at this size — try a smaller font.
+		size -= 0.5
 	}
-	pdf.CellFormat(w, h, txt, "", 0, align, false, 0, "")
 }
