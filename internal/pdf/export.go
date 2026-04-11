@@ -1,9 +1,11 @@
 package pdf
 
 import (
+	"bytes"
 	"fmt"
 	"time"
 
+	"avledger/internal/assets"
 	"avledger/internal/models"
 
 	"github.com/go-pdf/fpdf"
@@ -27,6 +29,9 @@ func Export(path string, entries []models.LogEntry, s models.Settings) error {
 		SizeStr:        "A4",
 		FontDirStr:     "",
 	})
+
+	opt := fpdf.ImageOptions{ImageType: "png", ReadDpi: true}
+	pdf.RegisterImageOptionsReader("logo", opt, bytes.NewReader(assets.ResourceLogoPng.StaticContent))
 
 	pdf.SetMargins(margin, margin, margin)
 	pdf.SetAutoPageBreak(false, 0)
@@ -61,12 +66,8 @@ func drawPage(pdf *fpdf.Fpdf, entries []models.LogEntry, s models.Settings, page
 	tableW := pageW - 2*margin // 277 mm
 	tableH := headerH + float64(rowsOnPage)*rowH
 
-	// ---- Logo placeholder (top-right) ----
-	pdf.SetFont("Helvetica", "B", 9)
-	pdf.SetDrawColor(0, 0, 0)
-	pdf.SetLineWidth(0.3)
-	pdf.SetXY(pageW-margin-45, margin)
-	pdf.CellFormat(45, 8, "AVLedger", "1", 0, "C", false, 0, "")
+	// ---- Logo (top-right) ----
+	pdf.ImageOptions("logo", pageW-margin-18, margin, 18, 18, false, fpdf.ImageOptions{ImageType: "png", ReadDpi: true}, 0, "")
 
 	// ---- Title ----
 	pdf.SetFont("Helvetica", "B", 11)

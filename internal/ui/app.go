@@ -7,6 +7,7 @@ import (
 	"runtime"
 	"time"
 
+	"avledger/internal/assets"
 	"avledger/internal/database"
 	"avledger/internal/models"
 	"avledger/internal/pdf"
@@ -25,8 +26,10 @@ import (
 func Run() {
 	a := app.NewWithID("com.avledger.app")
 	a.Settings().SetTheme(theme.DarkTheme())
+	a.SetIcon(assets.ResourceLogoPng)
 
 	w := a.NewWindow("AVLedger — Maintenance Logbook")
+	w.SetIcon(assets.ResourceLogoPng)
 	w.Resize(fyne.NewSize(1280, 760))
 	w.SetMaster()
 
@@ -141,8 +144,14 @@ func Run() {
 
 	titleCol := container.NewVBox(titleText, subtitleText)
 
+	logoImg := canvas.NewImageFromResource(assets.ResourceLogoPng)
+	logoImg.FillMode = canvas.ImageFillContain
+	logoImg.SetMinSize(fyne.NewSize(40, 40))
+
+	titleRow := container.NewHBox(logoImg, titleCol)
+
 	toolbar := container.NewHBox(
-		titleCol,
+		titleRow,
 		widget.NewSeparator(),
 		newBtn,
 		exportBtn,
