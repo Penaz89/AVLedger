@@ -45,6 +45,7 @@ func buildTable(
 		boldLabel("Aircraft / Engine"),
 		boldLabel("Reg"),
 		boldLabel("Cat."),
+		boldLabel("Job Type"),
 		boldLabel("ATA"),
 		boldLabel("WO N°"),
 		boldLabel("Task Detail"),
@@ -64,6 +65,7 @@ func buildTable(
 				widget.NewLabel(""),  // aircraft
 				widget.NewLabel(""),  // reg
 				widget.NewLabel(""),  // category
+				widget.NewLabel(""),  // job type
 				widget.NewLabel(""),  // ata
 				widget.NewLabel(""),  // wo
 				widget.NewLabel(""),  // task
@@ -88,18 +90,20 @@ func buildTable(
 				row.Objects[6].(*widget.Label),
 				row.Objects[7].(*widget.Label),
 				row.Objects[8].(*widget.Label),
+				row.Objects[9].(*widget.Label),
 			}
 			labels[0].SetText(fmt.Sprintf("%d", e.ID))
 			labels[1].SetText(e.Date)
 			labels[2].SetText(e.AircraftEngineType)
 			labels[3].SetText(e.RegMarks)
 			labels[4].SetText(e.Category)
-			labels[5].SetText(e.ATA)
-			labels[6].SetText(e.WorkOrderNumber)
-			labels[7].SetText(e.TaskDetail)
-			labels[8].SetText(e.VerifiedBy)
+			labels[5].SetText(e.JobType)
+			labels[6].SetText(e.ATA)
+			labels[7].SetText(e.WorkOrderNumber)
+			labels[8].SetText(e.TaskDetail)
+			labels[9].SetText(e.VerifiedBy)
 
-			actions := row.Objects[9].(*fyne.Container)
+			actions := row.Objects[10].(*fyne.Container)
 			editBtn := actions.Objects[0].(*widget.Button)
 			delBtn := actions.Objects[1].(*widget.Button)
 
@@ -136,7 +140,7 @@ func (et *entryTable) Refresh() {
 // ---- Layout helpers ----
 
 // proportions for each column (must sum to ~1.0)
-var colProportions = []float32{0.04, 0.07, 0.11, 0.06, 0.05, 0.04, 0.08, 0.32, 0.16, 0.07}
+var colProportions = []float32{0.04, 0.07, 0.11, 0.06, 0.05, 0.06, 0.04, 0.08, 0.26, 0.16, 0.07}
 
 type proportionalLayout struct{}
 

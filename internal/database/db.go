@@ -54,6 +54,7 @@ func (db *DB) migrate() error {
 			reg_marks            TEXT    NOT NULL,
 			task_detail          TEXT    NOT NULL,
 			category             TEXT    NOT NULL,
+			job_type             TEXT    NOT NULL DEFAULT '',
 			ata                  TEXT    NOT NULL DEFAULT '',
 			work_order_number    TEXT    NOT NULL DEFAULT '',
 			verified_by          TEXT    NOT NULL DEFAULT ''
@@ -64,7 +65,23 @@ func (db *DB) migrate() error {
 			value TEXT NOT NULL DEFAULT ''
 		);
 	`)
-	return err
+	if err != nil {
+		return err
+	}
+
+	// Safely add job_type column to existing tables
+	var colName string
+	err = db.conn.QueryRow("SELECT name FROM pragma_table_info('log_entries') WHERE name='job_type'").Scan(&colName)
+	if err == sql.ErrNoRows {
+		_, err = db.conn.Exec("ALTER TABLE log_entries ADD COLUMN job_type TEXT NOT NULL DEFAULT ''")
+		if err != nil {
+			return err
+		}
+	} else if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // Close closes the database connection.
@@ -78,7 +95,7 @@ func (db *DB) Close() error {
 func (db *DB) ListEntries() ([]models.LogEntry, error) {
 	rows, err := db.conn.Query(`
 		SELECT id, date, aircraft_engine_type, reg_marks, task_detail,
-		       category, ata, work_order_number, verified_by
+		       category, job_type, ata, work_order_number, verified_by
 		FROM log_entries
 		ORDER BY id ASC
 	`)
@@ -92,7 +109,7 @@ func (db *DB) ListEntries() ([]models.LogEntry, error) {
 		var e models.LogEntry
 		if err := rows.Scan(
 			&e.ID, &e.Date, &e.AircraftEngineType, &e.RegMarks, &e.TaskDetail,
-			&e.Category, &e.ATA, &e.WorkOrderNumber, &e.VerifiedBy,
+			&e.Category, &e.JobType, &e.ATA, &e.WorkOrderNumber, &e.VerifiedBy,
 		); err != nil {
 			return nil, err
 		}
@@ -105,10 +122,10 @@ func (db *DB) ListEntries() ([]models.LogEntry, error) {
 func (db *DB) CreateEntry(e models.LogEntry) (int64, error) {
 	res, err := db.conn.Exec(`
 		INSERT INTO log_entries
-			(date, aircraft_engine_type, reg_marks, task_detail, category, ata, work_order_number, verified_by)
-		VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+			(date, aircraft_engine_type, reg_marks, task_detail, category, job_type, ata, work_order_number, verified_by)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 		e.Date, e.AircraftEngineType, e.RegMarks, e.TaskDetail,
-		e.Category, e.ATA, e.WorkOrderNumber, e.VerifiedBy,
+		e.Category, e.JobType, e.ATA, e.WorkOrderNumber, e.VerifiedBy,
 	)
 	if err != nil {
 		return 0, err
@@ -121,11 +138,11 @@ func (db *DB) UpdateEntry(e models.LogEntry) error {
 	_, err := db.conn.Exec(`
 		UPDATE log_entries SET
 			date = ?, aircraft_engine_type = ?, reg_marks = ?,
-			task_detail = ?, category = ?, ata = ?,
+			task_detail = ?, category = ?, job_type = ?, ata = ?,
 			work_order_number = ?, verified_by = ?
 		WHERE id = ?`,
 		e.Date, e.AircraftEngineType, e.RegMarks, e.TaskDetail,
-		e.Category, e.ATA, e.WorkOrderNumber, e.VerifiedBy, e.ID,
+		e.Category, e.JobType, e.ATA, e.WorkOrderNumber, e.VerifiedBy, e.ID,
 	)
 	return err
 }

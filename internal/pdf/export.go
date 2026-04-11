@@ -16,7 +16,7 @@ const (
 )
 
 // column widths in mm — total must equal pageW - 2*margin = 277mm
-var colWidths = []float64{20, 28, 22, 85, 20, 14, 26, 62}
+var colWidths = []float64{20, 28, 22, 70, 20, 15, 14, 26, 62}
 
 // Export generates an A4 landscape PDF from the provided entries and settings,
 // writing the result to the given file path.
@@ -115,6 +115,7 @@ func drawPage(pdf *fpdf.Fpdf, entries []models.LogEntry, s models.Settings, page
 		"Reg",
 		"Task Detail",
 		"Category",
+		"Job type",
 		"ATA",
 		"Work Order",
 		"Verified by",
@@ -125,6 +126,7 @@ func drawPage(pdf *fpdf.Fpdf, entries []models.LogEntry, s models.Settings, page
 		"Marks",
 		"",
 		"(A,B1,B2,C)",
+		"",
 		"",
 		"Number",
 		"(Signature + Auth / AML)",
@@ -156,6 +158,7 @@ func drawPage(pdf *fpdf.Fpdf, entries []models.LogEntry, s models.Settings, page
 			e.RegMarks,
 			e.TaskDetail,
 			e.Category,
+			e.JobType,
 			e.ATA,
 			e.WorkOrderNumber,
 			e.VerifiedBy,
@@ -165,10 +168,10 @@ func drawPage(pdf *fpdf.Fpdf, entries []models.LogEntry, s models.Settings, page
 		for j, cell := range cells {
 			pdf.SetXY(xCol, y)
 			align := "C"
-			if j == 3 || j == 7 {
+			if j == 3 || j == 8 {
 				align = "L"
 			}
-			if hasData && (j == 3 || j == 7) {
+			if hasData && (j == 3 || j == 8) {
 				pdf.SetFont("Helvetica", "I", 8)
 			} else {
 				pdf.SetFont("Helvetica", "", 8)

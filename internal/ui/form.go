@@ -51,6 +51,10 @@ func showEntryForm(parent fyne.Window, existing models.LogEntry, onSave func(mod
 		categorySelect.SetSelected("B1")
 	}
 
+	jobTypeEntry := widget.NewEntry()
+	jobTypeEntry.SetPlaceHolder("e.g. Line, Base, Mod")
+	jobTypeEntry.SetText(existing.JobType)
+
 	ataEntry := widget.NewEntry()
 	ataEntry.SetPlaceHolder("e.g. 32")
 	ataEntry.SetText(existing.ATA)
@@ -71,6 +75,7 @@ func showEntryForm(parent fyne.Window, existing models.LogEntry, onSave func(mod
 		widget.NewFormItem("Registration *", regEntry),
 		widget.NewFormItem("Task Detail *", taskEntry),
 		widget.NewFormItem("Category", categorySelect),
+		widget.NewFormItem("Job type", jobTypeEntry),
 		widget.NewFormItem("ATA", ataEntry),
 		widget.NewFormItem("Work Order N°", woEntry),
 		widget.NewFormItem("Verified by", verifiedEntry),
@@ -120,6 +125,7 @@ func showEntryForm(parent fyne.Window, existing models.LogEntry, onSave func(mod
 			RegMarks:           strings.TrimSpace(regEntry.Text),
 			TaskDetail:         strings.TrimSpace(taskEntry.Text),
 			Category:           categorySelect.Selected,
+			JobType:            strings.TrimSpace(jobTypeEntry.Text),
 			ATA:                strings.TrimSpace(ataEntry.Text),
 			WorkOrderNumber:    strings.TrimSpace(woEntry.Text),
 			VerifiedBy:         strings.TrimSpace(verifiedEntry.Text),

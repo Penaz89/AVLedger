@@ -9,6 +9,7 @@ type LogEntry struct {
 	RegMarks           string // e.g. "EI-DAZ"
 	TaskDetail         string // Full description of the maintenance task
 	Category           string // A, B1, B2, or C
+	JobType            string // e.g. Line, Base, Mod
 	ATA                string // ATA chapter code
 	WorkOrderNumber    string
 	VerifiedBy         string // Name + authorisation number / AML number
