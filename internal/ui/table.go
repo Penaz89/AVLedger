@@ -13,6 +13,56 @@ import (
 	"fyne.io/fyne/v2/widget"
 )
 
+// resizeWatcher is an invisible widget that calls onResize whenever its
+// Resize method is invoked by the parent layout. This is used to detect
+// window-resize events and force the list to re-layout its rows.
+type resizeWatcher struct {
+	widget.BaseWidget
+	onResize func()
+}
+
+func newResizeWatcher(onResize func()) *resizeWatcher {
+	rw := &resizeWatcher{onResize: onResize}
+	rw.ExtendBaseWidget(rw)
+	return rw
+}
+
+func (rw *resizeWatcher) CreateRenderer() fyne.WidgetRenderer {
+	return widget.NewSimpleRenderer(newInvisibleRect())
+}
+
+func (rw *resizeWatcher) Resize(size fyne.Size) {
+	rw.BaseWidget.Resize(size)
+	if rw.onResize != nil {
+		rw.onResize()
+	}
+}
+
+// invisibleRect is a zero-opacity canvas rectangle used as a placeholder.
+type invisibleRect struct{ widget.BaseWidget }
+
+func newInvisibleRect() *invisibleRect {
+	r := &invisibleRect{}
+	r.ExtendBaseWidget(r)
+	return r
+}
+func (r *invisibleRect) CreateRenderer() fyne.WidgetRenderer {
+	return widget.NewSimpleRenderer(&zeroObject{})
+}
+
+// zeroObject is a no-op CanvasObject with zero min size.
+type zeroObject struct{}
+
+func (z *zeroObject) Size() fyne.Size                  { return fyne.Size{} }
+func (z *zeroObject) Resize(_ fyne.Size)                {}
+func (z *zeroObject) Position() fyne.Position           { return fyne.Position{} }
+func (z *zeroObject) Move(_ fyne.Position)              {}
+func (z *zeroObject) MinSize() fyne.Size                { return fyne.Size{} }
+func (z *zeroObject) Visible() bool                     { return false }
+func (z *zeroObject) Show()                             {}
+func (z *zeroObject) Hide()                             {}
+func (z *zeroObject) Refresh()                          {}
+
 // entryTable is a custom widget that displays log entries in a tabular layout.
 type entryTable struct {
 	entries  *[]models.LogEntry
@@ -103,6 +153,10 @@ func buildTable(
 			labels[8].SetText(e.TaskDetail)
 			labels[9].SetText(e.VerifiedBy)
 
+			for _, lbl := range labels {
+				lbl.Refresh()
+			}
+
 			actions := row.Objects[10].(*fyne.Container)
 			editBtn := actions.Objects[0].(*widget.Button)
 			delBtn := actions.Objects[1].(*widget.Button)
@@ -126,7 +180,16 @@ func buildTable(
 
 	et.list = list
 
-	content := container.NewBorder(headerBg, nil, nil, nil, list)
+	// resizeWatcher detects window resize and forces the list to re-layout
+	// its rows so that truncated labels stay within their column boundaries.
+	watcher := newResizeWatcher(func() {
+		list.Refresh()
+	})
+
+	// Stack the watcher invisibly behind the list so it shares the same size.
+	listWithWatcher := container.NewStack(watcher, list)
+
+	content := container.NewBorder(headerBg, nil, nil, nil, listWithWatcher)
 	return et, content
 }
 
