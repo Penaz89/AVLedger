@@ -1,9 +1,12 @@
 package ui
 
 import (
+	"image/color"
+
 	"avledger/internal/models"
 
 	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/layout"
@@ -97,14 +100,15 @@ func buildTable(
 		boldTruncLabel("WO N°"),
 		boldTruncLabel("Task Detail"),
 		boldTruncLabel("Verified by"),
-		boldTruncLabel(""),
 	)
-	headerBg := container.NewPadded(header)
+	headerBgRect := canvas.NewRectangle(theme.HoverColor())
+	headerBg := container.NewStack(headerBgRect, container.NewPadded(header))
 
 	// Data list
 	list := widget.NewList(
 		func() int { return len(*entries) },
 		func() fyne.CanvasObject {
+			rowBg := canvas.NewRectangle(color.Transparent)
 			row := container.New(
 				newProportionalLayout(),
 				newTruncLabel(""),  // date
@@ -121,11 +125,21 @@ func buildTable(
 					widget.NewButtonWithIcon("", theme.DeleteIcon(), nil),
 				),
 			)
-			return row
+			return container.NewStack(rowBg, row)
 		},
 		func(id widget.ListItemID, obj fyne.CanvasObject) {
 			e := (*entries)[id]
-			row := obj.(*fyne.Container)
+			stack := obj.(*fyne.Container)
+			rowBg := stack.Objects[0].(*canvas.Rectangle)
+			row := stack.Objects[1].(*fyne.Container)
+
+			if id%2 == 0 {
+				rowBg.FillColor = theme.HoverColor()
+			} else {
+				rowBg.FillColor = color.Transparent
+			}
+			rowBg.Refresh()
+
 			labels := []*widget.Label{
 				row.Objects[0].(*widget.Label),
 				row.Objects[1].(*widget.Label),

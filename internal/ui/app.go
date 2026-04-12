@@ -25,7 +25,7 @@ import (
 // Run initialises and starts the AVLedger application.
 func Run() {
 	a := app.NewWithID("com.avledger.app")
-	a.Settings().SetTheme(theme.DarkTheme())
+	a.Settings().SetTheme(&CustomTheme{})
 	a.SetIcon(assets.ResourceLogoPng)
 
 	w := a.NewWindow("AVLedger — Maintenance Logbook")
@@ -85,10 +85,13 @@ func Run() {
 	)
 
 	// ---- Count label (status bar) ----
-	countLabel := widget.NewLabel("")
+	countText := canvas.NewText("", theme.DisabledColor())
+	countText.TextSize = 11
+
 	updateCount := func() {
 		n := len(entryList)
-		countLabel.SetText(fmt.Sprintf("%d entr%s in the logbook", n, pluralIt(n)))
+		countText.Text = fmt.Sprintf("%d entr%s in the logbook", n, pluralIt(n))
+		countText.Refresh()
 	}
 	updateCount()
 
@@ -169,17 +172,17 @@ func Run() {
 	searchRow := container.NewBorder(nil, nil, container.NewHBox(widget.NewIcon(theme.SearchIcon()), widget.NewLabel("Search:")), nil, searchEntry)
 
 	// ---- Assemble layout ----
-	topArea := container.NewVBox(
+	toolsCard := widget.NewCard("", "", container.NewVBox(
 		container.NewPadded(toolbar),
 		widget.NewSeparator(),
 		container.NewPadded(searchRow),
-		widget.NewSeparator(),
-		container.NewPadded(dbBar),
-		widget.NewSeparator(),
-	)
+	))
+	dbCard := widget.NewCard("", "", container.NewPadded(dbBar))
+
+	topArea := container.NewPadded(container.NewVBox(toolsCard, dbCard))
 
 	bottomBar := container.NewPadded(
-		container.NewBorder(nil, nil, countLabel, nil),
+		container.NewBorder(nil, nil, countText, nil),
 	)
 
 	content := container.NewBorder(
