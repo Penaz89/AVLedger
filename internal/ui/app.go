@@ -53,6 +53,9 @@ func Run() {
 	// ---- Mutable entry list shared with table ----
 	entryList := entries
 
+	searchEntry := widget.NewEntry()
+	searchEntry.SetPlaceHolder("Search tasks...")
+
 	// ---- Build table ----
 	// et declared before callbacks so closures can reference it
 	var et *entryTable
@@ -66,7 +69,7 @@ func Run() {
 					dialog.ShowError(err, w)
 					return
 				}
-				reloadEntries(db, &entryList, w)
+				reloadEntries(db, &entryList, w, searchEntry.Text)
 				et.Refresh()
 			})
 		},
@@ -76,7 +79,7 @@ func Run() {
 				dialog.ShowError(err, w)
 				return
 			}
-			reloadEntries(db, &entryList, w)
+			reloadEntries(db, &entryList, w, searchEntry.Text)
 			et.Refresh()
 		},
 	)
@@ -90,9 +93,13 @@ func Run() {
 	updateCount()
 
 	refreshAll := func() {
-		reloadEntries(db, &entryList, w)
+		reloadEntries(db, &entryList, w, searchEntry.Text)
 		et.Refresh()
 		updateCount()
+	}
+
+	searchEntry.OnChanged = func(s string) {
+		refreshAll()
 	}
 
 	// ---- Toolbar buttons ----
@@ -159,9 +166,13 @@ func Run() {
 		settingsBtn,
 	)
 
+	searchRow := container.NewBorder(nil, nil, container.NewHBox(widget.NewIcon(theme.SearchIcon()), widget.NewLabel("Search:")), nil, searchEntry)
+
 	// ---- Assemble layout ----
 	topArea := container.NewVBox(
 		container.NewPadded(toolbar),
+		widget.NewSeparator(),
+		container.NewPadded(searchRow),
 		widget.NewSeparator(),
 		container.NewPadded(dbBar),
 		widget.NewSeparator(),
@@ -184,8 +195,14 @@ func Run() {
 
 // ---- Helpers ----
 
-func reloadEntries(db *database.DB, list *[]models.LogEntry, w fyne.Window) {
-	updated, err := db.ListEntries()
+func reloadEntries(db *database.DB, list *[]models.LogEntry, w fyne.Window, query string) {
+	var updated []models.LogEntry
+	var err error
+	if query == "" {
+		updated, err = db.ListEntries()
+	} else {
+		updated, err = db.SearchEntries(query)
+	}
 	if err != nil {
 		dialog.ShowError(err, w)
 		return

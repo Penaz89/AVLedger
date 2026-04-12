@@ -118,6 +118,42 @@ func (db *DB) ListEntries() ([]models.LogEntry, error) {
 	return entries, rows.Err()
 }
 
+// SearchEntries returns log entries that match the given query string.
+func (db *DB) SearchEntries(query string) ([]models.LogEntry, error) {
+	likeQuery := "%" + query + "%"
+	rows, err := db.conn.Query(`
+		SELECT id, date, aircraft_engine_type, reg_marks, task_detail,
+		       category, job_type, ata, work_order_number, verified_by
+		FROM log_entries
+		WHERE task_detail LIKE ?
+		   OR aircraft_engine_type LIKE ?
+		   OR reg_marks LIKE ?
+		   OR category LIKE ?
+		   OR job_type LIKE ?
+		   OR ata LIKE ?
+		   OR work_order_number LIKE ?
+		   OR verified_by LIKE ?
+		ORDER BY id ASC
+	`, likeQuery, likeQuery, likeQuery, likeQuery, likeQuery, likeQuery, likeQuery, likeQuery)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var entries []models.LogEntry
+	for rows.Next() {
+		var e models.LogEntry
+		if err := rows.Scan(
+			&e.ID, &e.Date, &e.AircraftEngineType, &e.RegMarks, &e.TaskDetail,
+			&e.Category, &e.JobType, &e.ATA, &e.WorkOrderNumber, &e.VerifiedBy,
+		); err != nil {
+			return nil, err
+		}
+		entries = append(entries, e)
+	}
+	return entries, rows.Err()
+}
+
 // CreateEntry inserts a new log entry and returns its assigned ID.
 func (db *DB) CreateEntry(e models.LogEntry) (int64, error) {
 	res, err := db.conn.Exec(`
