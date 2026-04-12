@@ -1,8 +1,6 @@
 package ui
 
 import (
-	"fmt"
-
 	"avledger/internal/models"
 
 	"fyne.io/fyne/v2"
@@ -90,11 +88,10 @@ func buildTable(
 	// Header row
 	header := container.New(
 		newProportionalLayout(),
-		boldTruncLabel("#"),
 		boldTruncLabel("Date"),
 		boldTruncLabel("Aircraft / Engine"),
 		boldTruncLabel("Reg"),
-		boldTruncLabel("Cat."),
+		boldTruncLabel(" Cat."),
 		boldTruncLabel("Job Type"),
 		boldTruncLabel("ATA"),
 		boldTruncLabel("WO N°"),
@@ -110,7 +107,6 @@ func buildTable(
 		func() fyne.CanvasObject {
 			row := container.New(
 				newProportionalLayout(),
-				newTruncLabel(""),  // #
 				newTruncLabel(""),  // date
 				newTruncLabel(""),  // aircraft
 				newTruncLabel(""),  // reg
@@ -140,24 +136,22 @@ func buildTable(
 				row.Objects[6].(*widget.Label),
 				row.Objects[7].(*widget.Label),
 				row.Objects[8].(*widget.Label),
-				row.Objects[9].(*widget.Label),
 			}
-			labels[0].SetText(fmt.Sprintf("%d", e.ID))
-			labels[1].SetText(e.Date)
-			labels[2].SetText(e.AircraftEngineType)
-			labels[3].SetText(e.RegMarks)
-			labels[4].SetText(e.Category)
-			labels[5].SetText(e.JobType)
-			labels[6].SetText(e.ATA)
-			labels[7].SetText(e.WorkOrderNumber)
-			labels[8].SetText(e.TaskDetail)
-			labels[9].SetText(e.VerifiedBy)
+			labels[0].SetText(e.Date)
+			labels[1].SetText(e.AircraftEngineType)
+			labels[2].SetText(e.RegMarks)
+			labels[3].SetText(e.Category)
+			labels[4].SetText(e.JobType)
+			labels[5].SetText(e.ATA)
+			labels[6].SetText(e.WorkOrderNumber)
+			labels[7].SetText(e.TaskDetail)
+			labels[8].SetText(e.VerifiedBy)
 
 			for _, lbl := range labels {
 				lbl.Refresh()
 			}
 
-			actions := row.Objects[10].(*fyne.Container)
+			actions := row.Objects[9].(*fyne.Container)
 			editBtn := actions.Objects[0].(*widget.Button)
 			delBtn := actions.Objects[1].(*widget.Button)
 
@@ -203,7 +197,7 @@ func (et *entryTable) Refresh() {
 // ---- Layout helpers ----
 
 // proportions for each column (must sum to ~1.0)
-var colProportions = []float32{0.04, 0.07, 0.11, 0.06, 0.05, 0.06, 0.04, 0.08, 0.26, 0.16, 0.07}
+var colProportions = []float32{0.07, 0.11, 0.06, 0.05, 0.06, 0.04, 0.08, 0.30, 0.16, 0.07}
 
 type proportionalLayout struct{}
 
