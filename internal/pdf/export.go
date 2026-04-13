@@ -111,26 +111,26 @@ func drawPage(pdf *fpdf.Fpdf, entries []models.LogEntry, s models.Settings, page
 	subH := headerH / 2.0
 
 	hLine1 := []string{
-		"Date",
-		"Aircraft /",
-		"Reg",
-		"Task Detail",
-		"Category",
-		"Job type",
+		"DATE",
+		"AIRCRAFT /",
+		"REG",
+		"TASK DETAIL",
+		"CATEGORY",
+		"JOB TYPE",
 		"ATA",
-		"Work Order",
-		"Verified by",
+		"WORK ORDER",
+		"VERIFIED BY",
 	}
 	hLine2 := []string{
 		"",
-		"Engine Type",
-		"Marks",
+		"ENGINE TYPE",
+		"MARKS",
 		"",
 		"(A,B1,B2,C)",
 		"",
 		"",
-		"Number",
-		"(Signature + Auth / AML)",
+		"NUMBER",
+		"(SIGNATURE + AUTH / AML)",
 	}
 
 	pdf.SetFont("Helvetica", "B", 7.5)
