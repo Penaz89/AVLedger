@@ -13,7 +13,7 @@ import (
 )
 
 // categories available for selection
-var categories = []string{"A", "B1", "B2", "C"}
+var categories = []string{"A", "B1", "B2", "C", "Mech"}
 
 // showEntryForm opens a modal dialog to create or edit a LogEntry.
 // onSave is called with the filled entry when the user confirms.
