@@ -1,6 +1,6 @@
 # ✈️ AVLedger
 
-**AVLedger** is a minimalist, open-source logbook tool for **Aircraft Maintenance Technicians (AMT)** — built with Go, designed with the [KISS principle](https://en.wikipedia.org/wiki/KISS_principle), and made for people who have better things to do than wait for software.
+**AVLedger** is a minimalist, open-source, EASA based logbook tool for **Aircraft Maintenance Engineers (AME)** — built with Go, designed with the [KISS principle](https://en.wikipedia.org/wiki/KISS_principle), and made for people who have better things to do than wait for software.
 
 Log your maintenance tasks, export your logbook, move on.
 
@@ -33,7 +33,7 @@ AMTs don't have time for bloated interfaces or sluggish exports. AVLedger gets o
 
 AVLedger is built around **KISS** — *Keep It Simple, Stupid*.
 
-No cloud. No subscriptions. No unnecessary complexity. Just a tool that works, on your machine, under your control. If it doesn't help an AMT log a task faster, it doesn't belong in AVLedger.
+No cloud. No subscriptions. No unnecessary complexity. Just a tool that works, on your machine, under your control. If it doesn't help an AME log a task faster, it doesn't belong in AVLedger.
 
 ---
 
