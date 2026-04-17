@@ -48,19 +48,31 @@ No locked-in cloud SaaS. No subscriptions. No unnecessary complexity. Just a too
 
 ### Build from source
 
+#### Linux, macOS, FreeBSD
+
 ```bash
 git clone https://github.com/Pnz89/avledger.git
 cd avledger
 go build -o avledger .
 ```
 
-### Run
-
+**Run:**
 ```bash
 ./avledger
 ```
 
-*(Note: Binaries can be built for Linux, macOS, FreeBSD, and Windows!)*
+#### Windows
+
+```powershell
+git clone https://github.com/Pnz89/avledger.git
+cd avledger
+go build -o avledger.exe .
+```
+
+**Run:**
+```powershell
+.\avledger.exe
+```
 
 ---
 
