@@ -2,6 +2,7 @@ package ui
 
 import (
 	"strings"
+	"time"
 
 	"avledger/internal/models"
 
@@ -29,14 +30,18 @@ func showEntryForm(parent fyne.Window, existing models.LogEntry, onSave func(mod
 	// ---- Fields ----
 	dateEntry := widget.NewEntry()
 	dateEntry.SetPlaceHolder("DD MMM YYYY")
-	dateEntry.SetText(existing.Date)
+	if isNew && existing.Date == "" {
+		dateEntry.SetText(strings.ToUpper(time.Now().Format("02 Jan 2006")))
+	} else {
+		dateEntry.SetText(existing.Date)
+	}
 
 	aircraftEntry := widget.NewEntry()
 	aircraftEntry.SetPlaceHolder("e.g. B737 NG (CFM56)")
 	aircraftEntry.SetText(existing.AircraftEngineType)
 
 	regEntry := widget.NewEntry()
-	regEntry.SetPlaceHolder("e.g. EI-DAZ")
+	regEntry.SetPlaceHolder("e.g. I-DEMF")
 	regEntry.SetText(existing.RegMarks)
 
 	taskEntry := widget.NewMultiLineEntry()
