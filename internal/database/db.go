@@ -91,6 +91,26 @@ func (db *DB) MoveTo(newDir string) error {
 	return nil
 }
 
+// SwitchTo safely closes the active connection and reopens it pointing to the specified new path,
+// without moving any files.
+func (db *DB) SwitchTo(newPath string) error {
+	if err := db.Close(); err != nil {
+		// Proceed anyway just in case
+	}
+
+	conn, err := sql.Open("sqlite", newPath)
+	if err != nil {
+		// Attempt fallback reopen
+		db.conn, _ = sql.Open("sqlite", db.Path)
+		return err
+	}
+	
+	db.conn = conn
+	db.Path = newPath
+
+	return nil
+}
+
 // moveFile bridges file relocation smoothly bridging partitions.
 func moveFile(src, dst string) error {
 	err := os.Rename(src, dst)

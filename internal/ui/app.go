@@ -229,9 +229,37 @@ func Run() {
 		openFolder(filepath.Dir(db.Path))
 	})
 
+	changeDBBtn := widget.NewButtonWithIcon("Change DB", theme.DocumentCreateIcon(), func() {
+		fileDialog := dialog.NewFileOpen(func(uc fyne.URIReadCloser, err error) {
+			if err != nil || uc == nil {
+				return
+			}
+			uc.Close()
+
+			newPath := uc.URI().Path()
+			if err := db.SwitchTo(newPath); err != nil {
+				dialog.ShowError(err, w)
+				return
+			}
+
+			a.Preferences().SetString("dbPath", db.Path)
+			dbPathLabel.SetText(db.Path)
+
+			updateSelectOptions()
+			refreshAll()
+
+			dialog.ShowInformation("Database Switched", "Successfully loaded the selected database.", w)
+		}, w)
+
+		fileDialog.SetFilter(storage.NewExtensionFileFilter([]string{".db", ".sqlite", ".sqlite3"}))
+		fileDialog.Show()
+	})
+
+	rightActions := container.NewHBox(changeDBBtn, openFolderBtn)
+
 	dbBar := container.NewBorder(nil, nil,
 		container.NewHBox(dbIcon, widget.NewLabel("Database:")),
-		openFolderBtn,
+		rightActions,
 		dbPathLabel,
 	)
 
