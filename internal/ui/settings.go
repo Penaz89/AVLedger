@@ -22,7 +22,7 @@ func showSettingsDialog(parent fyne.Window, db *database.DB, onSave func(models.
 	nameEntry.SetText(holderName)
 
 	licenceEntry := widget.NewEntry()
-	licenceEntry.SetPlaceHolder("e.g. IE.145.006 297")
+	licenceEntry.SetPlaceHolder("e.g. IT.66.XXXX")
 	licenceEntry.SetText(licenceNumber)
 
 	form := widget.NewForm(

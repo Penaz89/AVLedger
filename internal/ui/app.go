@@ -225,11 +225,7 @@ func Run() {
 	dbPathLabel.TextStyle = fyne.TextStyle{Monospace: true}
 	dbPathLabel.Truncation = fyne.TextTruncateEllipsis
 
-	openFolderBtn := widget.NewButtonWithIcon("Open folder", theme.FolderOpenIcon(), func() {
-		openFolder(filepath.Dir(db.Path))
-	})
-
-	changeDBBtn := widget.NewButtonWithIcon("Change DB", theme.DocumentCreateIcon(), func() {
+	changeDBItem := fyne.NewMenuItem("Change DB", func() {
 		fileDialog := dialog.NewFileOpen(func(uc fyne.URIReadCloser, err error) {
 			if err != nil || uc == nil {
 				return
@@ -254,8 +250,23 @@ func Run() {
 		fileDialog.SetFilter(storage.NewExtensionFileFilter([]string{".db", ".sqlite", ".sqlite3"}))
 		fileDialog.Show()
 	})
+	changeDBItem.Icon = theme.DocumentCreateIcon()
 
-	rightActions := container.NewHBox(changeDBBtn, openFolderBtn)
+	openFolderItem := fyne.NewMenuItem("Open Folder", func() {
+		openFolder(filepath.Dir(db.Path))
+	})
+	openFolderItem.Icon = theme.FolderOpenIcon()
+
+	manageMenu := fyne.NewMenu("Manage DB", changeDBItem, openFolderItem)
+
+	var manageDBBtn *widget.Button
+	manageDBBtn = widget.NewButtonWithIcon("Manage DB", theme.SettingsIcon(), func() {
+		pos := fyne.CurrentApp().Driver().AbsolutePositionForObject(manageDBBtn)
+		pos.Y += manageDBBtn.Size().Height
+		widget.ShowPopUpMenuAtPosition(manageMenu, w.Canvas(), pos)
+	})
+
+	rightActions := container.NewHBox(manageDBBtn)
 
 	dbBar := container.NewBorder(nil, nil,
 		container.NewHBox(dbIcon, widget.NewLabel("Database:")),
