@@ -87,7 +87,7 @@ Contributions are welcome. Please keep the KISS philosophy in mind — if a feat
 
 ## License
 
-AVLedger is licensed under the **[GNU General Public License v2.0](./LICENSE)**.
+AVLedger is licensed under the **[GNU General Public License v3.0](./LICENSE)**.
 
 You are free to use, study, modify, and distribute this software, provided that any derivative work is also distributed under the same license.
 
