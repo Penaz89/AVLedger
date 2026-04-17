@@ -68,6 +68,13 @@ func (db *DB) MoveTo(newDir string) error {
 
 	newPath := filepath.Join(newDir, "avledger.db")
 
+	// Prevent overwriting an existing database in the destination folder
+	if _, err := os.Stat(newPath); err == nil {
+		// Attempt fallback reopen
+		db.conn, _ = sql.Open("sqlite", db.Path)
+		return fmt.Errorf("a database already exists at the destination: %s", newPath)
+	}
+
 	if err := moveFile(db.Path, newPath); err != nil {
 		// attempt fallback reopen
 		db.conn, _ = sql.Open("sqlite", db.Path)

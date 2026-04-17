@@ -38,6 +38,25 @@ func Run() {
 
 	// ---- Open DB ----
 	customDBPath := a.Preferences().StringWithFallback("dbPath", "")
+	isFirstRun := customDBPath == ""
+	var autoDiscoveredCloudDB string
+
+	if isFirstRun {
+		cloudFolders := detectCloudSyncFolders()
+		for _, f := range cloudFolders {
+			checkPath := filepath.Join(f, "AVLedger", "avledger.db")
+			if _, err := os.Stat(checkPath); err == nil {
+				autoDiscoveredCloudDB = checkPath
+				break
+			}
+		}
+
+		if autoDiscoveredCloudDB != "" {
+			a.Preferences().SetString("dbPath", autoDiscoveredCloudDB)
+			customDBPath = autoDiscoveredCloudDB
+		}
+	}
+
 	db, err := database.Open(customDBPath)
 	if err != nil {
 		dialog.ShowError(err, w)
@@ -279,14 +298,47 @@ func Run() {
 
 	w.SetContent(content)
 
+	// ---- Notification if auto-discovered ----
+	if isFirstRun && autoDiscoveredCloudDB != "" {
+		dialog.ShowInformation("Cloud Logbook Found",
+			fmt.Sprintf("Welcome!\nWe automatically found and connected to your existing logbook in the cloud folder:\n\n%s", filepath.Dir(autoDiscoveredCloudDB)), w)
+	}
+
 	// ---- Cloud Backup Prompter ----
-	if !a.Preferences().Bool("cloudPrompted") {
-		if targetFolder := detectCloudSync(db.Path); targetFolder != "" {
-			dialog.ShowConfirm("Cloud Backup Detected",
-				fmt.Sprintf("We detected a cloud sync folder on your PC (%s).\n\nWould you like to move the AVLedger database there to automatically back it up?", filepath.Base(targetFolder)),
-				func(yes bool) {
-					a.Preferences().SetBool("cloudPrompted", true)
-					if yes {
+	if isFirstRun && autoDiscoveredCloudDB == "" && !a.Preferences().Bool("cloudPrompted") {
+		cloudFolders := detectCloudSyncFolders()
+		var validPaths []string
+		for _, p := range cloudFolders {
+			if !strings.HasPrefix(db.Path, p) {
+				validPaths = append(validPaths, p)
+			}
+		}
+
+		if len(validPaths) > 0 {
+			options := make([]string, len(validPaths))
+			for i, p := range validPaths {
+				options[i] = filepath.Base(p)
+			}
+
+			selectWidget := widget.NewSelect(options, nil)
+			selectWidget.SetSelected(options[0])
+
+			content := container.NewVBox(
+				widget.NewLabel("We detected cloud sync folders on your PC.\nWould you like to move the AVLedger database there to automatically back it up?"),
+				selectWidget,
+			)
+
+			dialog.ShowCustomConfirm("Cloud Backup Detected", "Move", "No, thanks", content, func(yes bool) {
+				a.Preferences().SetBool("cloudPrompted", true)
+				if yes {
+					var targetFolder string
+					for _, p := range validPaths {
+						if filepath.Base(p) == selectWidget.Selected {
+							targetFolder = p
+							break
+						}
+					}
+					if targetFolder != "" {
 						dest := filepath.Join(targetFolder, "AVLedger")
 						if err := db.MoveTo(dest); err != nil {
 							dialog.ShowError(err, w)
@@ -296,7 +348,8 @@ func Run() {
 						dbPathLabel.SetText(db.Path)
 						dialog.ShowInformation("Success", "Database moved securely and backup initialized.", w)
 					}
-				}, w)
+				}
+			}, w)
 		}
 	}
 
@@ -391,10 +444,10 @@ func pluralIt(n int) string {
 	return "ies"
 }
 
-func detectCloudSync(currentDBPath string) string {
+func detectCloudSyncFolders() []string {
 	home, err := os.UserHomeDir()
 	if err != nil {
-		return ""
+		return nil
 	}
 
 	targets := []string{
@@ -418,14 +471,12 @@ func detectCloudSync(currentDBPath string) string {
 		}
 	}
 
+	var found []string
 	for _, t := range targets {
 		if info, err := os.Stat(t); err == nil && info.IsDir() {
-			// Ensure it's not already within a cloud folder
-			if !strings.HasPrefix(currentDBPath, t) {
-				return t // suggest the first match
-			}
+			found = append(found, t)
 		}
 	}
 
-	return ""
+	return found
 }
